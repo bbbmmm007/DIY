@@ -1,0 +1,131 @@
+
+body {
+    font-family: Arial, sans-serif; /* 设置页面字体为 Arial，后备字体为 sans-serif */
+    background-color: #f0f4f7; /* 页面背景颜色 */
+    margin: 0; /* 去掉默认的外边距 */
+    padding: 0; /* 去掉默认的内边距 */
+}
+
+.container {
+    display: flex; /* 使用 Flexbox 布局 */
+    justify-content: space-between; /* 在主轴方向上平均分配空间 */
+    max-width: 3000px; /* 容器的最大宽度 */
+    margin: 0 auto; /* 在页面中居中 */
+    padding: 20px; /* 容器内边距 */
+}
+
+.form-container, .result-container {
+    width: 50%; /* 两个容器的宽度为 48% */
+}
+
+.form-container {
+    background-color: #ffffff; /* 背景颜色为白色 */
+    padding: 20px; /* 内边距 */
+    border-radius: 10px; /* 圆角 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 轻微的阴影效果 */
+}
+
+h1 {
+    font-size: 24px; /* 字体大小 */
+    margin-bottom: 20px; /* 下边距 */
+    color: #333; /* 字体颜色 */
+}
+
+.form-group {
+    margin-bottom: 15px; /* 下边距 */
+    display: flex; /* 使用 Flexbox 布局 */
+    align-items: center; /* 垂直居中对齐 */
+}
+
+label {
+    display: inline-block; /* 使标签成为块级元素 */
+    width: 25%; /* 标签宽度 */
+    font-weight: bold; /* 加粗字体 */
+    margin-right: 10px; /* 右边距 */
+    color: #555; /* 字体颜色 */
+}
+
+select, input {
+    width: 60%; /* 宽度为 60% */
+    padding: 10px; /* 内边距 */
+    font-size: 14px; /* 字体大小 */
+    border: 1px solid #ccc; /* 边框颜色 */
+    border-radius: 5px; /* 圆角 */
+    transition: border-color 0.3s ease; /* 边框颜色的过渡效果 */
+}
+
+select:hover, input:hover {
+    border-color: #007bff; /* 悬停时边框颜色变化 */
+}
+
+button {
+    width: 100%; /* 宽度为 100% */
+    padding: 10px; /* 内边距 */
+    font-size: 16px; /* 字体大小 */
+    background-color: #4CAF50; /* 背景颜色 */
+    color: white; /* 字体颜色 */
+    border: none; /* 无边框 */
+    border-radius: 5px; /* 圆角 */
+    cursor: pointer; /* 鼠标指针为手形 */
+    transition: background-color 0.3s ease; /* 背景颜色的过渡效果 */
+}
+
+button:hover {
+    background-color: #45a049; /* 悬停时背景颜色变化 */
+}
+
+.result-container {
+    background-color: #eaf2f8; /* 背景颜色 */
+    padding: 20px; /* 内边距 */
+    border-radius: 10px; /* 圆角 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+}
+
+#loading {
+    display: none; /* 默认不显示 */
+    font-size: 16px; /* 字体大小 */
+    color: #007bff; /* 字体颜色 */
+    text-align: center; /* 居中对齐 */
+}
+
+.form-container, .result-container {
+    animation: fadeIn 0.8s ease-out; /* 动画效果 */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0; /* 从透明开始 */
+        transform: translateY(20px); /* 向下移动 20 像素 */
+    }
+    to {
+        opacity: 1; /* 最终透明度为 1 */
+        transform: translateY(0); /* 还原位置 */
+    }
+}
+
+/* 容器的宽度 */
+.form-container {
+    max-width: 2100px; /* 最大宽度为 1000px */
+    margin: 0 auto; /* 居中 */
+}
+
+/* 行的布局：可以灵活设置列数 */
+.row {
+    display: grid; /* 使用网格布局 */
+    gap: 5px; /* 列间距 */
+    margin-bottom: 10px; /* 下边距 */
+}
+
+/* 设置每行 1 列、2 列、或 3 列 */
+.row.two-cols {
+    grid-template-columns: repeat(2, 1fr); /* 两列布局 */
+}
+
+.row.three-cols {
+    grid-template-columns: repeat(3, 1fr); /* 三列布局 */
+}
+
+.row.single-col {
+    grid-template-columns: 1fr; /* 单列布局 */
+}
+

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimi AI Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/AI.css">
+</head>
+<body>
+<div id="container">
+    <div id="chat-container">
+        <div id="chat-log"></div>
+        <div id="input-container">
+            <input type="text" id="input" placeholder="输入你的问题..." />
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+
+    <div id="result-container">
+        <div class="button-group">
+            <button type="button" class="btn btn-secondary" id="backBtn">返回</button>
+            <button type="button" class="btn btn-info" id="homeBtn">回到主页</button>
+        </div>
+        <div id="result">
+            <h3>输出结果</h3>
+            <div id="result-content"></div>
+            <div id="code-container" style="display: none;">
+                <pre><code id="code-content"></code></pre>
+            </div>
+            <button id="copy-btn">一键复制</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+<script>
+    let messages = [];
+
+    // 发送消息的异步函数
+    async function sendMessage() {
+        const userInput = document.getElementById("input").value;
+        if (userInput.trim() === "") return;
+
+        addMessage(userInput, "user");
+        messages.push({ role: "user", content: userInput });
+        document.getElementById("input").value = "";
+
+        const loader = document.createElement("div");
+        loader.className = "loader";
+        loader.textContent = "正在加载...";
+        document.getElementById("chat-log").appendChild(loader);
+
+        try {
+            const response = await fetch("/chat/message", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ messages })
+            });
+
+            if (!response.ok) throw new Error("网络错误");
+
+            const assistantMessage = await response.text();
+            document.getElementById("chat-log").removeChild(loader);
+            addMessage(assistantMessage, "assistant");
+            messages.push({ role: "assistant", content: assistantMessage });
+
+            // 格式化输出并提取代码块
+            document.getElementById("result-content").innerHTML = formatResponse(assistantMessage);
+            const codeContents = [...new Set(extractCode(assistantMessage))]; // 使用 Set 去重
+
+            // 清空代码内容
+            document.getElementById("code-content").innerHTML = '';
+
+            // 如果提取到代码块，显示代码容器
+            if (codeContents.length > 0) {
+                document.getElementById("code-container").style.display = "block";
+                codeContents.forEach(code => {
+                    const language = getLanguageFromCode(code); // 获取语言类型
+                    const codeElem = document.createElement('div'); // 创建一个 div 包裹代码块
+                    codeElem.innerHTML = `<strong>${language}</strong><pre><code>${code}</code></pre>`; // 显示语言类型和代码
+                    document.getElementById("code-content").appendChild(codeElem);
+                    hljs.highlightBlock(codeElem.querySelector('code')); // 高亮代码
+                });
+            } else {
+                // 如果没有代码块，隐藏代码容器
+                document.getElementById("code-container").style.display = "none";
+            }
+        } catch (error) {
+            console.error("发生错误:", error);
+            if (loader) {
+                document.getElementById("chat-log").removeChild(loader);
+            }
+            addMessage("发生错误，请稍后重试。", "assistant");
+        }
+    }
+
+    // 格式化助手的响应，处理分点与代码部分
+    function formatResponse(response) {
+        // 匹配代码块
+        const codeBlocks = response.match(/```([\s\S]*?)```/g);
+
+        // 将代码块替换为占位符，以便后续处理
+        let formattedResponse = response;
+        if (codeBlocks) {
+            codeBlocks.forEach((block, index) => {
+                // 创建占位符
+                const placeholder = `[[CODE_BLOCK_${index}]]`;
+                formattedResponse = formattedResponse.replace(block, placeholder);
+            });
+        }
+
+        // 处理分点内容
+        formattedResponse = formattedResponse.replace(/(\d+\.)/g, '<br><strong>$1</strong>');  // 使数字后跟的点变粗并换行
+
+        // 将其余的响应按行分割并包裹在 div 中
+        const lines = formattedResponse.split('\n');
+        const formattedLines = lines.map(line => {
+            // 替换占位符为代码块
+            return codeBlocks ? line.replace(/\[\[CODE_BLOCK_(\d+)\]\]/, () => {
+                return `<pre><code>${codeBlocks[arguments[1]]}</code></pre>`; // 恢复代码块
+            }) : `<div>${line}</div>`;
+        });
+
+        return formattedLines.join(''); // 返回格式化后的字符串
+    }
+
+    // 提取代码块的函数
+    function extractCode(response) {
+        const matches = response.match(/```(\w*)\n([\s\S]*?)```/g); // 匹配代码块及其语言
+        return matches ? matches.map(match => match.replace(/```(\w*)\n|\n```/g, '').trim()) : []; // 返回提取到的代码块
+    }
+
+    // 获取代码语言的函数
+    function getLanguageFromCode(code) {
+        const match = code.match(/```(\w+)/); // 获取语言类型
+        return match ? match[1] : "plaintext"; // 默认返回 plaintext
+    }
+
+    // 添加消息到聊天记录的函数
+    function addMessage(content, role) {
+        const chatLog = document.getElementById("chat-log");
+        const messageElement = document.createElement("div");
+        messageElement.className = `message ${role}`;
+        messageElement.textContent = content;
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // 复制代码到剪贴板的事件监听
+    document.getElementById("copy-btn").addEventListener("click", () => {
+        const codeContent = document.getElementById("code-content").textContent;
+        navigator.clipboard.writeText(codeContent).then(() => {
+            alert("代码已复制到剪贴板！");
+        }, (err) => {
+            console.error("复制失败:", err);
+        });
+    });
+
+    // 发送按钮和回车键事件监听
+    document.getElementById("send-btn").addEventListener("click", sendMessage);
+    document.getElementById("input").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") sendMessage();
+    });
+</script>
+
+</body>
+</html>

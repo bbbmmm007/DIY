@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单聊天页面</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-dark.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+
+        .chat-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-right: 1px solid #ddd;
+        }
+
+        #message-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+            max-height: 80vh;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: #daf7a6;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #f7f7f7;
+            border-top: 1px solid #ddd;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #send-button {
+            padding: 10px 15px;
+            margin-left: 10px;
+            border: none;
+            background-color: #4caf50;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #send-button:hover {
+            background-color: #45a049;
+        }
+
+        .code-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #1e1e1e;
+            border-radius: 5px;
+            color: #f8f8f2;
+            white-space: pre-wrap;
+            font-family: "Courier New", Courier, monospace;
+            overflow: auto;
+        }
+
+        .hljs {
+            display: block;
+            padding: 1em;
+            background: #1e1e1e;
+            color: #f8f8f2;
+            border-radius: 5px;
+        }
+
+        .code-block {
+            margin-bottom: 20px;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            padding: 6px 12px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .button-group {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .button-group button {
+            margin: 0 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button-group button:hover {
+            background-color: #0056b3;
+        }
+
+        #result-container {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            max-height: 100vh;
+        }
+
+        #result {
+            flex: 1;
+            overflow: auto;
+        }
+
+        #result-content {
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 80vh;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-box">
+        <ul id="message-list"></ul>
+        <div class="input-container">
+            <input type="text" id="message-input" placeholder="输入消息..." />
+            <button id="send-button">发送</button>
+        </div>
+    </div>
+
+    <div id="result-container">
+        <div class="button-group">
+            <button type="button" id="backBtn">返回</button>
+            <button type="button" id="homeBtn">回到主页</button>
+        </div>
+        <div id="result">
+            <h3>输出结果</h3>
+            <div id="result-content"></div>
+            <div id="code-container"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+
+<script>
+    let messages = []; // 用来存储用户和助手之间的消息
+
+    // 发送消息的函数
+    async function sendMessage() {
+        // 获取用户输入的消息
+        const userInput = document.getElementById("message-input").value;
+
+        // 如果输入为空，直接返回，不进行任何操作
+        if (userInput.trim() === "") return;
+
+        // 显示用户消息
+        addMessage(userInput, "user");
+        // 将用户消息添加到 messages 数组
+        messages.push({ role: "user", content: userInput });
+
+        // 清空输入框
+        document.getElementById("message-input").value = "";
+
+        // 显示加载提示
+        const loader = document.createElement("div");
+        loader.className = "loader";
+        loader.textContent = "正在加载...";
+        document.getElementById("message-list").appendChild(loader);
+
+        try {
+            // 发送 POST 请求到服务器，获取助手的回复
+            const response = await fetch("/chat/message", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ messages }) // 将消息传递给服务器
+            });
+
+            // 如果响应不正常，则抛出错误
+            if (!response.ok) throw new Error("网络错误");
+
+            // 获取助手的回复
+            const assistantMessage = await response.text();
+
+            // 移除加载提示
+            document.getElementById("message-list").removeChild(loader);
+
+            // 显示助手的消息
+            addMessage(assistantMessage, "assistant");
+            // 将助手的消息添加到 messages 数组
+            messages.push({ role: "assistant", content: assistantMessage });
+
+            // 格式化输出并提取代码块
+            appendResult(assistantMessage);
+
+        } catch (error) {
+            // 如果发生错误，打印错误信息并显示错误提示
+            console.error("发生错误:", error);
+            if (loader) {
+                document.getElementById("message-list").removeChild(loader);
+            }
+            addMessage("发生错误，请稍后重试。", "assistant");
+        }
+    }
+
+    // 格式化助手的响应，将每一行转化为 HTML 格式
+    function formatResponse(response) {
+        const lines = response.split('\n'); // 将响应按行分割
+        // 为每一行创建一个 <div> 元素，返回这些 <div> 元素的 HTML 字符串
+        return lines.map(line => `<div>${line}</div>`).join('');
+    }
+
+    // 提取响应中的代码块，代码块被 ``` 包围
+    function extractCode(response) {
+        // 使用正则表达式查找所有的代码块
+        const matches = response.match(/```(.*?)```/gs);
+        // 如果找到代码块，则返回处理过的代码，去掉 ``` 符号
+        return matches ? matches.map(match => match.replace(/```/g, '').trim()) : [];
+    }
+
+    // 显示消息
+    function addMessage(content, role) {
+        const messageList = document.getElementById("message-list");
+        const messageElement = document.createElement("li");
+        messageElement.className = `message ${role}`; // 设置消息的样式，区分用户和助手
+        messageElement.textContent = content; // 设置消息内容
+        messageList.appendChild(messageElement); // 将消息添加到消息列表
+        messageList.scrollTop = messageList.scrollHeight; // 滚动到最新的消息
+    }
+
+    // 处理助手的响应并追加显示
+    function appendResult(assistantMessage) {
+        const resultContent = document.getElementById("result-content");
+
+        // 直接追加新的响应内容，而不是清空
+        resultContent.innerHTML += formatResponse(assistantMessage);
+
+        // 提取代码块
+        const codeContents = extractCode(assistantMessage);
+        const codeContainer = document.getElementById("code-container");
+
+        // 追加每个新的代码块，而不清空之前的内容
+        codeContents.forEach((code, index) => {
+            const codeBlock = document.createElement("div");
+            codeBlock.className = "code-block";
+
+            // 将代码块拆分为第一行和后续的代码
+            const codeLines = code.split('\n');
+            const firstLine = codeLines[0];
+            const remainingCode = codeLines.slice(1).join('\n');
+
+            // 创建第一行的 <div> 元素
+            const firstLineElement = document.createElement("div");
+            firstLineElement.textContent = firstLine;
+            codeBlock.appendChild(firstLineElement);
+
+            // 创建 <pre><code> 标签显示后续代码，并应用代码高亮
+            const pre = document.createElement("pre");
+            const codeElement = document.createElement("code");
+            codeElement.className = "hljs";
+            codeElement.textContent = remainingCode;
+            hljs.highlightBlock(codeElement); // 使用 highlight.js 库对代码进行高亮显示
+            pre.appendChild(codeElement);
+
+            // 创建一键复制按钮
+            const copyButton = document.createElement("button");
+            copyButton.className = "copy-btn";
+            copyButton.textContent = "一键复制";
+            copyButton.onclick = () => copyCode(remainingCode);
+
+            // 将代码块和按钮添加到页面
+            codeBlock.appendChild(pre);
+            codeBlock.appendChild(copyButton);
+
+            // 保留之前的代码块，并追加新的代码块
+            codeContainer.appendChild(codeBlock);
+        });
+    }
+
+    // 复制代码到剪贴板
+    function copyCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            alert("代码已复制到剪贴板！");
+        }, (err) => {
+            console.error("复制失败:", err);
+        });
+    }
+
+    // 为发送按钮添加点击事件监听器，点击时发送消息
+    document.getElementById("send-button").addEventListener("click", sendMessage);
+
+    // 为输入框添加回车事件监听器，按下回车键时发送消息
+    document.getElementById("message-input").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") sendMessage();
+    });
+
+</script>
+</body>
+</html>

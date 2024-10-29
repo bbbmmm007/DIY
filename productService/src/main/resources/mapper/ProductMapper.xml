@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhny.computer.mapper.ProductMapper">
+    <resultMap id="ProductEntityMap" type="com.zhny.computer.entity.Product">
+        <id column="id" property="id"/>
+        <result column="child_id" property="childId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="ancestor_id" property="ancestorId"/>
+        <result column="item_type" property="itemType"/>
+        <result column="performance_score" property="performanceScore"/>
+        <result column="memory_support" property="memorySupport"/>
+        <result column="min_price"    property="minPrice"/>
+        <result column="count_collect" property="countCollect"/>
+        <result column="count_cart" property="countCart"/>
+        <result column="created_user" property="createdUser"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="modified_user" property="modifiedUser"/>
+        <result column="modified_time" property="modifiedTime"/>
+    </resultMap>
+
+    <!--根据商品ID查询商品信息-->
+    <select id="findById" resultMap="ProductEntityMap">
+        SELECT * FROM t_product WHERE id = #{id}
+    </select>
+
+    <select id="showProduct" resultMap="ProductEntityMap">
+        SELECT item_type, price, image ,salt ,performance_score FROM t_product WHERE id = #{id}
+    </select>
+
+    <!--由商品ID获取到所有分类ID-->
+    <select id="showAllProductId" resultMap="ProductEntityMap">
+        SELECT child_id, parent_id, ancestor_id
+        FROM t_product
+        WHERE id = #{id}
+    </select>
+
+    <!--查询商品信息，根据条件和分页-->
+    <select id="findProducts" resultMap="ProductEntityMap">
+        SELECT id, child_id, parent_id, ancestor_id, performance_score, salt, item_type, price, image
+        FROM t_product
+        WHERE status = 1
+        <if test="params.itemType != null">
+            AND item_type LIKE CONCAT('%', #{params.itemType}, '%')
+        </if>
+        <if test="params.ancestorId != null">
+            AND ancestor_id = #{params.ancestorId}
+        </if>
+        <if test="params.parentId != null">
+            AND parent_id = #{params.parentId}
+        </if>
+        <if test="params.childId != null">
+            AND child_id = #{params.childId}
+        </if>
+        <if test="params.sortOrder != null">
+            ORDER BY price ${params.sortOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+
+
+    <!-- 统计展示所有商品的总数，根据条件 -->
+    <select id="countProducts" resultType="Integer">
+        SELECT COUNT(*)
+        FROM t_product
+        WHERE status = 1
+        <if test="params.itemType != null">
+            AND item_type LIKE CONCAT('%', #{params.itemType}, '%')
+        </if>
+        <if test="params.ancestorId != null">
+            AND ancestor_id = #{params.ancestorId}
+        </if>
+        <if test="params.parentId != null">
+            AND parent_id = #{params.parentId}
+        </if>
+        <if test="params.childId != null">
+            AND child_id = #{params.childId}
+        </if>
+    </select>
+
+
+    <!--添加商品-->
+    <insert id="insertProduct" useGeneratedKeys="true" keyProperty="id">
+        insert into t_product(child_id,parent_id,ancestor_id,item_type,price,image,performance_score,salt,created_user,status,count_collect,count_cart,
+                              created_time,modified_user,modified_time)
+        values (#{childId},#{parentId},#{ancestorId},#{itemType},#{price},#{image},#{performanceScore},#{salt},#{createdUser},#{status},#{count_collect},#{count_cart},#{createdTime},#{modifiedUser},#{modifiedTime})
+    </insert>
+
+    <!--删除商品-->
+    <delete id="deleteProduct">
+        delete from t_product where id=#{id}
+    </delete>
+
+    <!--更新商品信息-->
+    <update id="updateProduct">
+        UPDATE t_product
+        <set>
+            <if test="itemType != null">item_type = #{itemType},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="image != null">image = #{image},</if>
+            <if test="salt != null">salt = #{salt},</if>
+            <if test="performanceScore != null">performanceScore = #{performanceScore},</if>
+            modified_user = #{modifiedUser},
+            modified_time = #{modifiedTime}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+
+
+    <!-- 定制化配置 -->
+    <!-- 查询出最有性价比的D4 IntelCPU -->
+    <select id="autoSelectBestValueD4IntelCPU" resultMap="ProductEntityMap">
+        SELECT
+            item_type, price
+        FROM t_product
+        WHERE child_id = 111
+        AND price BETWEEN #{minCPUBudget} AND #{maxCPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+            LIMIT 1;
+    </select>
+
+    <!-- 查询出最有性价比的D4D5都兼容的 Intel CPU -->
+    <select id="autoSelectBestValueD4D5IntelCPU" resultMap="ProductEntityMap">
+        SELECT
+            item_type, price
+        FROM t_product
+        WHERE (parent_id = 11 ) and (item_type LIKE '%13%' OR item_type LIKE '%14%')
+        AND price BETWEEN #{minCPUBudget} AND #{maxCPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+            LIMIT 1;
+    </select>
+    <!-- 查询出最有性价比的D5 AmdCPU -->
+    <select id="autoSelectBestValueD5AmdCPU" resultMap="ProductEntityMap">
+        SELECT
+            item_type, price
+        FROM t_product
+        WHERE (child_id = 122 OR child_id = 123)
+        AND price BETWEEN #{minCPUBudget} AND #{maxCPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+            LIMIT 1;
+    </select>
+    <!-- 查询出最有性价比的D4 AmdCPU -->
+    <select id="autoSelectBestValueD4AmdCPU" resultMap="ProductEntityMap">
+        SELECT
+            item_type, price
+        FROM t_product
+        WHERE child_id = 121
+        AND price BETWEEN #{minCPUBudget} AND #{maxCPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+            LIMIT 1;
+    </select>
+
+
+    <!-- 查询出最有性价比显存容量在4GB及以下的卡 -->
+    <select id="autoSelectBestValue4GPU" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND (item_type LIKE '%4g%' OR item_type LIKE '%4GB%'
+        OR item_type LIKE '%3g%' OR item_type LIKE '%3GB%'
+        OR item_type LIKE '%2g%' OR item_type LIKE '%2GB%')
+        AND price BETWEEN #{minGPUBudget} AND #{maxGPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 查询出最有性价比显存容量在8GB及以下的卡 -->
+    <select id="autoSelectBestValue8GPU" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND (item_type LIKE '%8g%' OR item_type LIKE '%8GB%'
+        OR item_type LIKE '%7g%' OR item_type LIKE '%7GB%'
+        OR item_type LIKE '%6g%' OR item_type LIKE '%6GB%')
+        AND price BETWEEN #{minGPUBudget} AND #{maxGPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 查询出最有性价比显存容量在12GB及以下的卡 -->
+    <select id="autoSelectBestValue12GPU" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND (item_type LIKE '%12g%' OR item_type LIKE '%12GB%'
+        OR item_type LIKE '%10g%' OR item_type LIKE '%10GB%'
+        OR item_type LIKE '%11g%' OR item_type LIKE '%11GB%')
+        AND price BETWEEN #{minGPUBudget} AND #{maxGPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 查询出最有性价比显存容量在16GB以上的卡 -->
+    <select id="autoSelectBestValue16GPU" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND (item_type LIKE '%16g%' OR item_type LIKE '%16GB%'
+        OR item_type LIKE '%24g%' OR item_type LIKE '%24GB%')
+        AND price BETWEEN #{minGPUBudget} AND #{maxGPUBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 选择intel主板 -->
+    <select id="autoSelectBestValueIntel" resultMap="ProductEntityMap" flushCache="true">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND (
+        (item_type LIKE '%B660%' OR item_type LIKE '%B760%' OR item_type LIKE '%Z690%'
+        OR item_type LIKE '%Z790%' OR item_type LIKE '%H610%')
+        AND item_type NOT LIKE '%B650%' -- 排除含有 B650 的项
+        )
+        AND child_id = #{childId}
+        AND price BETWEEN #{minMotherboardBudget} AND #{maxMotherboardBudget}
+        <choose>
+            <when test="order == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="order == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 选择amd主板 -->
+    <select id="autoSelectBestValueAmd" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND (item_type LIKE '%B450%' OR item_type LIKE '%B550%' OR item_type LIKE '%B650%'
+        OR item_type LIKE '%A520%')
+        AND child_id = #{childId}
+        AND price BETWEEN #{minMotherboardBudget} AND #{maxMotherboardBudget}
+        <choose>
+            <when test="order == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="order == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 查询出最有性价比的机箱 -->
+    <select id="autoSelectBestValueCase" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE ancestor_id = 8
+        AND parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND price BETWEEN #{minCaseBudget} AND #{maxCaseBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 查询出最有性价比的电源 -->
+    <select id="autoSelectBestValueSUE" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE (item_type like CONCAT('%', #{supplySize}, '%'))
+        AND parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND price BETWEEN #{minSUEBudget} AND #{maxSUEBudget}
+        <choose>
+            <when test="priceOrder == 'ASC'">
+                ORDER BY price ASC, performance_score DESC
+            </when>
+            <when test="priceOrder == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+    <!-- 查询出最有性价比或价格最高的内存条 -->
+    <select id="autoSelectBestValueMemory" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        <if test="childId != null and childId != '' ">
+            AND child_id = #{childId}
+        </if>
+        <if test="memorySize != null and memorySize != ''">
+            AND item_type LIKE CONCAT('%', #{memorySize}, '%')
+        </if>
+        <if test="minMemoryBudget != null and minMemoryBudget != ''">
+            AND price >= #{minMemoryBudget}
+        </if>
+        <if test="maxMemoryBudget != null and maxMemoryBudget != ''">
+            AND price &lt;= #{maxMemoryBudget}
+        </if>
+        <choose>
+            <when test="order == 'ASC'">
+                ORDER BY price ASC,performance_score DESC
+            </when>
+            <when test="order == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+
+    <!-- 查询出最有性价比或价格最高的固态硬盘 -->
+    <select id="autoSelectBestValueSSD" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE ancestor_id = 7
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+        <if test="ssdSize != null and ssdSize != ''">
+            AND item_type LIKE CONCAT('%', #{ssdSize}, '%')
+        </if>
+        <if test="minSsdBudget != null and maxSsdBudget != null">
+            AND price BETWEEN #{minSsdBudget} AND #{maxSsdBudget}
+        </if>
+        <choose>
+            <when test="order == 'ASC'">
+                ORDER BY price ASC,performance_score DESC
+            </when>
+            <when test="order == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+
+<!--散热-->
+    <select id="autoSelectBestValueCooler" resultMap="ProductEntityMap">
+        SELECT item_type, price
+        FROM t_product
+        WHERE parent_id = #{parentId}
+        AND child_id = #{childId}
+        AND price BETWEEN #{minCoolingBudget} AND #{maxCoolingBudget}
+        <choose>
+            <when test="order == 'ASC'">
+                ORDER BY price ASC,performance_score DESC
+            </when>
+            <when test="order == 'DESC'">
+                ORDER BY price DESC
+            </when>
+        </choose>
+        LIMIT 1
+    </select>
+
+</mapper>

@@ -1,0 +1,144 @@
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f9;
+}
+
+#container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    height: 80vh;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#chat-container {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #ddd;
+    overflow: hidden;
+}
+
+#chat-log {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message.user {
+    align-self: flex-end;
+    background-color: #daf7a6;
+}
+
+.message.assistant {
+    align-self: flex-start;
+    background-color: #f0f0f0;
+}
+
+#input-container {
+    display: flex;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border-top: 1px solid #ddd;
+}
+
+#input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#send-btn {
+    padding: 10px 15px;
+    margin-left: 10px;
+    border: none;
+    background-color: #4caf50;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#send-btn:hover {
+    background-color: #45a049;
+}
+
+#result-container {
+    width: 50%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.button-group {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.button-group button {
+    margin: 0 5px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button-group button:hover {
+    background-color: #0056b3;
+}
+
+#result {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+#code-container {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #1e1e1e; /* 黑色背景 */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    color: #f8f8f2; /* 文字颜色 */
+    white-space: pre-wrap;
+    overflow: auto; /* 允许上下和左右滚动 */
+    font-family: "Courier New", Courier, monospace; /* 使用等宽字体 */
+    max-height: 300px; /* 限制高度 */
+}
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background: #1e1e1e;
+    color: #f8f8f2;
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhny.computer.mapper.ProductMapper">
+    <resultMap id="ProductEntityMap" type="com.zhny.computer.entity.Product">
+        <id column="id" property="id"/>
+        <result column="child_id" property="childId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="ancestor_id" property="ancestorId"/>
+        <result column="item_type" property="itemType"/>
+        <result column="performance_score" property="performanceScore"/>
+        <result column="memory_support" property="memorySupport"/>
+        <result column="min_price"    property="minPrice"/>
+        <result column="created_user" property="createdUser"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="modified_user" property="modifiedUser"/>
+        <result column="modified_time" property="modifiedTime"/>
+    </resultMap>
+
+    <!--根据商品ID查询商品信息-->
+    <select id="findById" resultMap="ProductEntityMap">
+        SELECT * FROM t_product WHERE id = #{id}
+    </select>
+
+</mapper>
