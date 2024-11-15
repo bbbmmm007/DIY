@@ -65,7 +65,7 @@ public class ChatController {
 
         Map<String, Object> system = new HashMap<>();
         system.put("role", "system");
-        system.put("content", "你是 Kimi，由 Moonshot AI 提供的人工智能助手");
+        system.put("content", "你是 Kimi，如果用户提问代码的问题,在代码前一定要加上 代码: 的字样");
 
         // 创建一个 List 来返回消息数组
         List<Map<String, Object>> messages = new ArrayList<>();

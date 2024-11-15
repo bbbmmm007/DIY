@@ -2,37 +2,33 @@
 body {
     font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
     margin: 0;
     background-color: #f4f4f9;
 }
 
-#container {
+.chat-container {
     display: flex;
-    width: 90%;
-    max-width: 1200px;
-    height: 80vh;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    flex: 1;
     overflow: hidden;
 }
 
-#chat-container {
-    width: 50%;
+.chat-box {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
     border-right: 1px solid #ddd;
-    overflow: hidden;
 }
 
-#chat-log {
-    padding: 20px;
-    height: 100%;
+#message-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     overflow-y: auto;
     flex-grow: 1;
+    max-height: 80vh;
 }
 
 .message {
@@ -53,92 +49,87 @@ body {
     background-color: #f0f0f0;
 }
 
-#input-container {
-    display: flex;
-    padding: 10px;
-    background-color: #f7f7f7;
-    border-top: 1px solid #ddd;
-}
-
-#input {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-#send-btn {
-    padding: 10px 15px;
-    margin-left: 10px;
-    border: none;
-    background-color: #4caf50;
-    color: #fff;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-#send-btn:hover {
-    background-color: #45a049;
-}
-
-#result-container {
-    width: 50%;
-    padding: 20px;
+.input-container {
     display: flex;
     flex-direction: column;
     position: relative;
+    background-color: #f7f7f7;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    height: 180px;  /* 输入框区域的高度 */
 }
 
-.button-group {
+/* 输入区域：用于输入文本 */
+.input-area {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    min-height: 60px;
+    max-height: 120px;  /* 限制输入框最大高度 */
+    overflow-y: auto;
+    resize: none;
+    white-space: pre-wrap;
+}
+
+/* 按钮区域：放置发送和换行按钮 */
+.button-area {
+    display: flex;
+    justify-content: flex-start;  /* 按钮紧挨着左边 */
     position: absolute;
-    top: 10px;
-    right: 10px;
+    bottom: 10px;  /* 距离底部10px */
+    right: 10px;   /* 距离右边10px */
 }
 
-.button-group button {
-    margin: 0 5px;
-    padding: 8px 12px;
+/* 按钮的基础样式 */
+button {
+    padding: 10px;
     border: none;
     border-radius: 5px;
-    background-color: #007bff;
-    color: white;
     cursor: pointer;
     transition: background-color 0.3s;
+    height: 40px; /* 固定高度 */
+    width: 80px;  /* 固定宽度 */
+    margin-left: 5px;  /* 按钮间距 */
 }
 
-.button-group button:hover {
+/* 发送按钮样式 */
+#send-button {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+#send-button:hover {
+    background-color: #45a049;
+}
+
+/* 换行按钮样式 */
+#newline-button {
+    background-color: #007bff;
+    color: white;
+}
+
+#newline-button:hover {
     background-color: #0056b3;
 }
 
-#result {
-    flex-grow: 1;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow-y: auto;
-}
 
-#code-container {
+.code-container {
     margin-top: 10px;
     padding: 10px;
-    background-color: #1e1e1e; /* 黑色背景 */
-    border: 1px solid #ddd;
+    background-color: #1e1e1e;
     border-radius: 5px;
-    color: #f8f8f2; /* 文字颜色 */
+    color: #f8f8f2;
     white-space: pre-wrap;
-    overflow: auto; /* 允许上下和左右滚动 */
-    font-family: "Courier New", Courier, monospace; /* 使用等宽字体 */
-    max-height: 300px; /* 限制高度 */
+    font-family: "Courier New", Courier, monospace;
+    overflow: auto;
 }
 
 .hljs {
     display: block;
-    overflow-x: auto;
-    padding: 0.5em;
+    padding: 1em;
     background: #1e1e1e;
     color: #f8f8f2;
+    border-radius: 5px;
 }

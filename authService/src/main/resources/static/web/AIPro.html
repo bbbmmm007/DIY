@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>简单聊天页面</title>
+    <title>AI助手</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-dark.min.css">
     <style>
         body {
@@ -58,34 +58,145 @@
 
         .input-container {
             display: flex;
-            padding: 10px;
+            flex-direction: column;
+            position: relative;
             background-color: #f7f7f7;
             border-top: 1px solid #ddd;
+            padding: 10px;
+            height: 180px;  /* 输入框区域的高度 */
         }
 
-        #message-input {
+        /* 输入区域：用于输入文本 */
+        .input-area {
             flex-grow: 1;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            min-height: 60px;
+            max-height: 120px;  /* 限制输入框最大高度 */
+            overflow-y: auto;
+            resize: none;
+            white-space: pre-wrap;
         }
 
-        #send-button {
-            padding: 10px 15px;
-            margin-left: 10px;
+        /* 按钮区域：放置发送和换行按钮 */
+        .button-area {
+            display: flex;
+            justify-content: flex-start;  /* 按钮紧挨着左边 */
+            position: absolute;
+            bottom: 10px;  /* 距离底部10px */
+            right: 10px;   /* 距离右边10px */
+        }
+
+        /* 按钮的基础样式 */
+        button {
+            padding: 10px;
             border: none;
-            background-color: #4caf50;
-            color: #fff;
-            font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            height: 40px; /* 固定高度 */
+            width: 80px;  /* 固定宽度 */
+            margin-left: 5px;  /* 按钮间距 */
+        }
+
+        /* 发送按钮样式 */
+        #send-button {
+            background-color: #4caf50;
+            color: #fff;
         }
 
         #send-button:hover {
             background-color: #45a049;
         }
+
+        /* 换行按钮样式 */
+        #newline-button {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #newline-button:hover {
+            background-color: #0056b3;
+        }
+
+
+        /* 容器设置，用于展示结果的主要区域 */
+        #result-container {
+            width: 50%;  /* 设置容器的宽度为页面宽度的 50% */
+            padding: 20px;  /* 容器内部的间距，使内容与容器边缘保持距离 */
+            display: flex;  /* 使用 flexbox 布局 */
+            flex-direction: column;  /* 设置 flexbox 布局方向为纵向（列方向） */
+            position: relative;  /* 设置相对定位，使得内部元素（如按钮）可以使用绝对定位来控制位置 */
+            max-height: 100vh;  /* 设置最大高度为 100% 的视口高度（屏幕高度），防止内容区域超出屏幕 */
+        }
+
+        /* 设置返回和回到主页按钮的区域 */
+        #result-header {
+            display: flex;  /* 使用 flexbox 布局，方便水平排列按钮 */
+            justify-content: flex-end;  /* 将按钮对齐到容器的右侧 */
+            margin-bottom: 30px;  /* 在按钮下方添加 10px 的间距，使其与内容区域保持一定的间距 */
+        }
+
+        /* 按钮组容器，控制按钮之间的间距 */
+        .button-group {
+            display: flex;  /* 使用 flexbox 布局，确保按钮横向排列 */
+            gap: 5px;  /* 按钮之间的间距为 10px，避免按钮重叠 */
+        }
+
+        /* 按钮的样式 */
+        .button-group button {
+            padding: 8px 16px;  /* 按钮的内边距，设置为上下 8px，左右 16px */
+            border: none;  /* 去除按钮默认的边框 */
+            background-color: #007bff;  /* 按钮的背景色为蓝色 */
+            color: white;  /* 按钮文字的颜色为白色 */
+            border-radius: 5px;  /* 按钮的圆角半径为 5px，使按钮边角圆润 */
+            cursor: pointer;  /* 设置鼠标悬停时为指针形状，表示按钮可以点击 */
+            transition: background-color 0.3s;  /* 设置背景颜色的过渡效果，0.3秒 */
+        }
+
+        /* 按钮的悬停效果 */
+        .button-group button:hover {
+            background-color: #0056b3;  /* 鼠标悬停时，背景颜色变为深蓝色 */
+        }
+
+        /* 结果显示区域 */
+        #result {
+            flex: 1;  /* 让该区域的高度占据剩余空间 */
+            overflow: auto;  /* 如果内容超出容器，将会出现滚动条 */
+            padding: 10px;  /* 内边距，使得结果内容与容器边缘保持一定距离 */
+            background-color: #fff;  /* 背景色为白色 */
+            border-radius: 5px;  /* 设置圆角，使容器的四个角呈现圆形 */
+        }
+
+        /* 结果内容区域，处理长内容或代码块 */
+        #result-content {
+            padding: 10px;  /* 内边距，增加与内容区边缘的间隔 */
+            overflow-y: auto;  /* 如果内容超出容器的高度，启用垂直滚动条 */
+            max-height: 80vh;  /* 设置最大高度为 80% 的视口高度，确保内容不会超出屏幕太多 */
+            white-space: pre-wrap;  /* 保持代码格式和换行，文本内的换行符将被保留并正确显示 */
+        }
+
+
+        .copy-btn {
+            padding: 8px 16px;  /* 设置按钮的内边距 */
+            width: auto;  /* 自动调整宽度 */
+            height: 40px;  /* 固定高度 */
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: relative;  /* 使按钮可以使用 z-index */
+            z-index: 10;  /* 确保按钮在其他元素上层 */
+        }
+
+        .copy-btn:hover {
+            background-color: #0056b3;
+        }
+
+
 
         .code-container {
             margin-top: 10px;
@@ -104,25 +215,6 @@
             background: #1e1e1e;
             color: #f8f8f2;
             border-radius: 5px;
-        }
-
-        .code-block {
-            margin-bottom: 20px;
-        }
-
-        .copy-btn {
-            margin-top: 10px;
-            padding: 6px 12px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .copy-btn:hover {
-            background-color: #0056b3;
         }
 
         .button-group {
@@ -167,23 +259,49 @@
             max-height: 80vh;
             white-space: pre-wrap;
         }
+
+        /* 控制分隔线样式 */
+        .response-separator {
+            border: none;  /* 去掉默认边框 */
+            border-top: 2px solid #ddd;  /* 设置分隔线的样式 */
+            margin: 20px 0;  /* 分隔线上下添加一些间距 */
+        }
+
+        /* 你可以在这儿也对空行进行控制 */
+        br {
+            margin: 10px 0;  /* 给每个空行添加一定的间距 */
+        }
+
     </style>
+
+
 </head>
 <body>
 <div class="chat-container">
     <div class="chat-box">
         <ul id="message-list"></ul>
         <div class="input-container">
-            <input type="text" id="message-input" placeholder="输入消息..." />
-            <button id="send-button">发送</button>
+            <!-- 输入区域 -->
+            <textarea id="message-input" class="input-area" placeholder="输入消息..." rows="1"></textarea>
+
+            <!-- 按钮区域 -->
+            <div class="button-area">
+                <button id="newline-button">换行</button>
+                <button id="send-button">发送</button>
+            </div>
         </div>
     </div>
 
     <div id="result-container">
-        <div class="button-group">
-            <button type="button" id="backBtn">返回</button>
-            <button type="button" id="homeBtn">回到主页</button>
+        <!-- 右上角的按钮区 -->
+        <div id="result-header">
+            <div class="button-group">
+                <button type="button" id="backBtn">返回</button>
+                <button type="button" id="homeBtn">回到主页</button>
+            </div>
         </div>
+
+        <!-- 输出内容区域 -->
         <div id="result">
             <h3>输出结果</h3>
             <div id="result-content"></div>
@@ -191,63 +309,60 @@
         </div>
     </div>
 </div>
-
+<script src="../js/UserButton.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
-
 <script>
-    let messages = []; // 用来存储用户和助手之间的消息
+    // 存储用户和助手的消息
+    let messages = [];
 
-    // 发送消息的函数
     async function sendMessage() {
-        // 获取用户输入的消息
         const userInput = document.getElementById("message-input").value;
 
-        // 如果输入为空，直接返回，不进行任何操作
+        // 如果用户输入为空（只是空格或完全没有输入），则返回不执行后续代码
         if (userInput.trim() === "") return;
 
-        // 显示用户消息
+        // 添加用户输入的消息到消息列表中
         addMessage(userInput, "user");
-        // 将用户消息添加到 messages 数组
+
+        // 将用户输入的消息保存到 messages 数组中，用于后续发送到后台
         messages.push({ role: "user", content: userInput });
 
-        // 清空输入框
+        // 清空用户输入框中的内容
         document.getElementById("message-input").value = "";
 
-        // 显示加载提示
+        // 创建一个加载中的提示信息
         const loader = document.createElement("div");
-        loader.className = "loader";
-        loader.textContent = "正在加载...";
-        document.getElementById("message-list").appendChild(loader);
+        loader.className = "loader";  // 为加载提示框添加一个 CSS 类
+        loader.textContent = "正在加载...";  // 设置提示内容
+        document.getElementById("message-list").appendChild(loader);  // 将加载框添加到消息列表中
 
         try {
-            // 发送 POST 请求到服务器，获取助手的回复
+            // 向后台发送请求，获取助手的回复
             const response = await fetch("/chat/message", {
-                method: "POST",
+                method: "POST",  // 请求方法是 POST
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json"  // 设置请求体的格式为 JSON
                 },
-                body: JSON.stringify({ messages }) // 将消息传递给服务器
+                body: JSON.stringify({ messages })  // 将所有消息（包括用户的）发送给后台
             });
 
-            // 如果响应不正常，则抛出错误
             if (!response.ok) throw new Error("网络错误");
 
-            // 获取助手的回复
+            // 获取后台返回的助手消息
             const assistantMessage = await response.text();
 
-            // 移除加载提示
+            // 移除加载框
             document.getElementById("message-list").removeChild(loader);
 
-            // 显示助手的消息
-            addMessage(assistantMessage, "assistant");
-            // 将助手的消息添加到 messages 数组
+            // 获取助手消息并处理
+            const resultContent = appendResult(assistantMessage);
+
+            // 将结果添加到对话框
+            addMessage(resultContent.formattedText, "assistant", resultContent.formattedCodeBlocks);
+
+            // 将助手的消息保存到 messages 数组中
             messages.push({ role: "assistant", content: assistantMessage });
-
-            // 格式化输出并提取代码块
-            appendResult(assistantMessage);
-
         } catch (error) {
-            // 如果发生错误，打印错误信息并显示错误提示
             console.error("发生错误:", error);
             if (loader) {
                 document.getElementById("message-list").removeChild(loader);
@@ -256,97 +371,170 @@
         }
     }
 
-    // 格式化助手的响应，将每一行转化为 HTML 格式
-    function formatResponse(response) {
-        const lines = response.split('\n'); // 将响应按行分割
-        // 为每一行创建一个 <div> 元素，返回这些 <div> 元素的 HTML 字符串
-        return lines.map(line => `<div>${line}</div>`).join('');
+    function addMessage(content, role, codeBlocks = "") {
+        const messageList = document.getElementById("message-list");  // 获取消息列表的容器
+        const messageElement = document.createElement("li");  // 创建一个新的列表项来显示消息
+        messageElement.className = `message ${role}`;  // 为消息添加角色的 CSS 类（"user" 或 "assistant"）
+
+        // 设置消息的文本内容
+        messageElement.innerHTML = content;
+
+        // 如果有代码块，插入代码块部分
+        if (codeBlocks) {
+            const codeContainer = document.createElement("div");
+            codeContainer.innerHTML = codeBlocks;
+            messageElement.appendChild(codeContainer);  // 将代码块部分添加到消息中
+        }
+
+        // 将消息添加到消息列表中
+        messageList.appendChild(messageElement);
+
+        // 滚动消息列表到最后一条消息
+        messageList.scrollTop = messageList.scrollHeight;
     }
 
-    // 提取响应中的代码块，代码块被 ``` 包围
-    function extractCode(response) {
-        // 使用正则表达式查找所有的代码块
-        const matches = response.match(/```(.*?)```/gs);
-        // 如果找到代码块，则返回处理过的代码，去掉 ``` 符号
-        return matches ? matches.map(match => match.replace(/```/g, '').trim()) : [];
-    }
-
-    // 显示消息
-    function addMessage(content, role) {
-        const messageList = document.getElementById("message-list");
-        const messageElement = document.createElement("li");
-        messageElement.className = `message ${role}`; // 设置消息的样式，区分用户和助手
-        messageElement.textContent = content; // 设置消息内容
-        messageList.appendChild(messageElement); // 将消息添加到消息列表
-        messageList.scrollTop = messageList.scrollHeight; // 滚动到最新的消息
-    }
-
-    // 处理助手的响应并追加显示
     function appendResult(assistantMessage) {
-        const resultContent = document.getElementById("result-content");
+        // 提取助手消息中的所有代码块并记录索引
+        const codeBlocks = extractCode(assistantMessage);
 
-        // 直接追加新的响应内容，而不是清空
-        resultContent.innerHTML += formatResponse(assistantMessage);
-
-        // 提取代码块
-        const codeContents = extractCode(assistantMessage);
-        const codeContainer = document.getElementById("code-container");
-
-        // 追加每个新的代码块，而不清空之前的内容
-        codeContents.forEach((code, index) => {
-            const codeBlock = document.createElement("div");
-            codeBlock.className = "code-block";
-
-            // 将代码块拆分为第一行和后续的代码
-            const codeLines = code.split('\n');
-            const firstLine = codeLines[0];
-            const remainingCode = codeLines.slice(1).join('\n');
-
-            // 创建第一行的 <div> 元素
-            const firstLineElement = document.createElement("div");
-            firstLineElement.textContent = firstLine;
-            codeBlock.appendChild(firstLineElement);
-
-            // 创建 <pre><code> 标签显示后续代码，并应用代码高亮
-            const pre = document.createElement("pre");
-            const codeElement = document.createElement("code");
-            codeElement.className = "hljs";
-            codeElement.textContent = remainingCode;
-            hljs.highlightBlock(codeElement); // 使用 highlight.js 库对代码进行高亮显示
-            pre.appendChild(codeElement);
-
-            // 创建一键复制按钮
-            const copyButton = document.createElement("button");
-            copyButton.className = "copy-btn";
-            copyButton.textContent = "一键复制";
-            copyButton.onclick = () => copyCode(remainingCode);
-
-            // 将代码块和按钮添加到页面
-            codeBlock.appendChild(pre);
-            codeBlock.appendChild(copyButton);
-
-            // 保留之前的代码块，并追加新的代码块
-            codeContainer.appendChild(codeBlock);
+        // 移除助手消息中的代码块部分
+        let messageWithoutCode = assistantMessage;
+        let offset = 0; // 用于跟踪删除操作后的偏移量
+        codeBlocks.forEach(({ content, startIndex, endIndex }) => {
+            const adjustedStart = startIndex + offset;
+            const adjustedEnd = endIndex + offset;
+            messageWithoutCode = messageWithoutCode.substring(0, adjustedStart) + messageWithoutCode.substring(adjustedEnd);
+            offset -= (endIndex - startIndex);
         });
+
+        // 获取没有代码块的文本内容
+        const formattedText = formatResponse(messageWithoutCode);
+
+        // 代码块部分
+        let formattedCodeBlocks = "";
+        if (codeBlocks.length > 0) {
+            codeBlocks.forEach(({ content }) => {
+                const codeBlock = document.createElement("div");
+                codeBlock.className = "code-block";
+
+                const codeLines = content.split('\n');
+                const firstLine = codeLines[0];
+                const remainingCode = codeLines.slice(1).join('\n');
+
+                const firstLineElement = document.createElement("div");
+                firstLineElement.textContent = firstLine;
+                codeBlock.appendChild(firstLineElement);
+
+                const pre = document.createElement("pre");
+                const codeElement = document.createElement("code");
+                codeElement.className = firstLine.trim();
+                codeElement.textContent = remainingCode;
+                hljs.highlightElement(codeElement);
+                pre.appendChild(codeElement);
+
+                // 创建复制按钮
+                const copyButton = document.createElement("button");
+                copyButton.className = "copy-btn";
+                copyButton.textContent = "复制代码";
+                copyButton.addEventListener('click', () => {
+                    console.log("复制按钮被点击");
+                    copyCode(remainingCode);
+                });
+
+
+                codeBlock.appendChild(pre);
+                codeBlock.appendChild(copyButton);
+
+                formattedCodeBlocks += codeBlock.outerHTML;  // 将代码块转为 HTML 字符串
+            });
+        }
+
+        // 返回处理后的文本和代码块的 HTML
+        return { formattedText, formattedCodeBlocks };
     }
 
-    // 复制代码到剪贴板
+
+
+
+    // 复制代码到剪贴板的函数
     function copyCode(code) {
+        console.log("准备复制的代码:", code);  // 打印要复制的代码
         navigator.clipboard.writeText(code).then(() => {
             alert("代码已复制到剪贴板！");
         }, (err) => {
-            console.error("复制失败:", err);
+            console.error("复制失败:", err);  // 输出错误信息
         });
     }
 
-    // 为发送按钮添加点击事件监听器，点击时发送消息
+
+    // 格式化助手的消息，将每一行消息放入一个 `<div>` 标签中
+    function formatResponse(response) {
+        const lines = response.split('\n');  // 将响应按行分割
+        return lines.map(line => `<div>${line}</div>`).join('');  // 每行包裹在 `<div>` 中，并将所有行连接起来
+    }
+
+    // 提取响应中的代码块（以 ``` 开头和结尾的部分）并记录索引
+    function extractCode(response) {
+        const codeBlocks = [];
+        let regex = /```([\s\S]*?)```/g;  // 使用全局匹配并确保匹配所有字符
+        let match;
+
+        // 保证直到没有更多的匹配
+        while ((match = regex.exec(response)) !== null) {
+            codeBlocks.push({
+                content: match[1].trim(),
+                startIndex: match.index,
+                endIndex: match.index + match[0].length
+            });
+        }
+
+        return codeBlocks;
+    }
+
+
+    // 动态调整输入框高度
+    const messageInput = document.getElementById('message-input');
+    messageInput.addEventListener('input', function () {
+        // 先重置输入框高度
+        this.style.height = 'auto';
+
+        // 设置高度为 scrollHeight，达到最大高度后，开启滚动条
+        const maxHeight = 150; // 最大高度
+        this.style.height = Math.min(this.scrollHeight, maxHeight) + 'px';
+    });
+    // 监听发送按钮的点击事件，触发发送消息的操作
     document.getElementById("send-button").addEventListener("click", sendMessage);
 
-    // 为输入框添加回车事件监听器，按下回车键时发送消息
+    // 监听用户按下回车键的事件，也触发发送消息
     document.getElementById("message-input").addEventListener("keypress", (event) => {
         if (event.key === "Enter") sendMessage();
     });
 
+    // 返回按钮的事件处理（示例行为：清空当前结果内容）
+    document.getElementById("backBtn").addEventListener("click", () => {
+        document.getElementById("result-content").innerHTML = "";
+        document.getElementById("code-container").innerHTML = "";
+    });
+
+    // 回到主页按钮的事件处理（示例行为：刷新页面）
+    document.getElementById("homeBtn").addEventListener("click", () => {
+        window.location.href = '/';  // 跳转到主页
+    });
+
+    // 按下Shift+Enter时，换行
+    messageInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && event.shiftKey) {
+            // 防止Enter键的默认行为
+            event.preventDefault();
+            this.value += '\n';  // 添加换行
+        }
+    });
+
+    // 点击换行按钮时，手动换行
+    document.getElementById('newline-button').addEventListener('click', function() {
+        messageInput.value += '\n'; // 在输入框中插入换行符
+        messageInput.dispatchEvent(new Event('input')); // 触发input事件，以调整输入框高度
+    });
 </script>
 </body>
 </html>
