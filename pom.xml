@@ -14,7 +14,6 @@
         <module>collectionService</module>
         <module>profileCartService</module>
         <module>knowledgeService</module>
-        <module>gateway</module>
     </modules>
     <packaging>pom</packaging>
     <description>SpringCloud</description>
