@@ -1,13 +1,12 @@
 package com.zhny.computer.controller;
 
-import com.zhny.computer.entity.Cart;
+
 import com.zhny.computer.service.CartService;
 import com.zhny.computer.service.util.JsonResult;
 import com.zhny.computer.vo.CartVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("carts")

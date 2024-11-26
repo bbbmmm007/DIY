@@ -10,6 +10,11 @@ import java.util.List;
 public interface ProductMapper {
     // 根据商品ID查询商品信息
     Product findById(@Param("id") Integer id);
+
+    //更新商品收藏次数
+    Integer updateProductCollectCount(@Param("id") Integer id);
+    //更新商品加入配置车次数
+    Integer updateProductCartCount(@Param("id") Integer id);
 }
 
 

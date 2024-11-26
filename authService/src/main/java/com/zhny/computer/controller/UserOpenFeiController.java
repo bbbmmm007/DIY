@@ -107,9 +107,6 @@ public class UserOpenFeiController extends BaseController {
     JsonResult<Void> addCarts(HttpSession session,@PathVariable("id") Integer id){
         Integer uid = getUidFromSession(session);
         String username = getUsernameFromSession(session);
-        System.out.println(uid);
-        System.out.println(username);
-        System.out.println(id);
 
         return cartOpenfeignService.addCarts(uid,username,id);
     }

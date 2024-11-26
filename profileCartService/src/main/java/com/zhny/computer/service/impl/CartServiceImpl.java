@@ -67,11 +67,17 @@ public class CartServiceImpl implements CartService {
         cart.setModifiedTime(new Date());
         cart.setModifiedUser(username);
 
+        resultProduct.setCountCart(resultProduct.getCountCart()+1);
+
 
 
         Integer rows = cartMapper.addProfileCart(cart);
         if (rows != 1) {
             throw new DataInsertException("插入数据时发生未知错误");
+        }
+        Integer row = productMapper.updateProductCartCount(id);
+        if (row != 1) {
+            throw new DataInsertException("更新数据时发生未知错误");
         }
 
     }

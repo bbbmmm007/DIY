@@ -6,10 +6,7 @@ import com.zhny.computer.entity.Product;
 import com.zhny.computer.mapper.AdminMapper;
 import com.zhny.computer.mapper.ProductMapper;
 import com.zhny.computer.service.ProductService;
-import com.zhny.computer.service.ex.DataAccessException;
-import com.zhny.computer.service.ex.DataDeleteException;
-import com.zhny.computer.service.ex.DataSelectException;
-import com.zhny.computer.service.ex.DataUpdateException;
+import com.zhny.computer.service.ex.*;
 import com.zhny.computer.vo.ProductVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +55,12 @@ public class ProductServiceImpl implements ProductService {
         product.setModifiedUser("admin");
         product.setCreatedTime(new Date());
         product.setModifiedTime(new Date());
+
+
+        Integer row=productMapper.insertProduct(product);
+        if (row<0) {
+            throw new  DataInsertException("新增商品失败");
+        }
 
     }
     //更新商品信息

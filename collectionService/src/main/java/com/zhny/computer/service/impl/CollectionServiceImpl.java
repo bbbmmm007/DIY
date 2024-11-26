@@ -53,6 +53,10 @@ public class CollectionServiceImpl implements CollectionService {
         if(rows!=1){
             throw new DataInsertException("插入数据时发生错误");
         }
+        Integer row = productMapper.updateProductCollectCount(id);
+        if(row!=1){
+            throw new DataInsertException("更新数据时发生错误");
+        }
     }
 
     //移除收藏商品

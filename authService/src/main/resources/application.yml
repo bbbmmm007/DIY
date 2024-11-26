@@ -26,9 +26,6 @@ server:
   port: 8080  # 将 8080 替换为你需要的端口号
 
 
-logging:
-  level:
-    com.zhny.computer.openfeign: debug
 
 
 moonshot:  #kmai 密钥

@@ -23,4 +23,21 @@
         SELECT * FROM t_product WHERE id = #{id}
     </select>
 
+    <!---更新商品的收藏次数-->
+    <update id="updateProductCollectCount">
+        UPDATE t_product
+        <set>
+            count_collect=count_collect+1
+        </set>
+        WHERE id=#{id}
+    </update>
+    <!---更新商品的加入配置车次数-->
+    <update id="updateProductCartCount">
+        UPDATE t_product
+        <set>
+            count_cart=count_cart+1
+        </set>
+        WHERE id=#{id}
+    </update>
+
 </mapper>

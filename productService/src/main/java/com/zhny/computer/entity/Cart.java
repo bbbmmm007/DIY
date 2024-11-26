@@ -11,6 +11,8 @@ public class Cart extends BaseEntity {
     private Integer childId;
     private Integer ancestorId;
     private String ancestorName;
+    private Integer countCollect;
+    private Integer countCart;
     private Long price;
     private String itemType;
     private String image;

@@ -33,6 +33,10 @@ public interface ProductMapper {
             @Param("modifiedUser") String modifiedUser,
             @Param("modifiedTime") Date modifiedTime,
             @Param("id") Integer id);
+    //更新商品收藏次数
+    Integer updateProductCollectCount(@Param("id") Integer id);
+    //更新商品加入配置车次数
+    Integer updateProductCartCount(@Param("id") Integer id);
 
 
 

@@ -15,6 +15,8 @@ public class Product extends BaseEntity {
     private Integer status;
     private Integer salt;
     private Integer performanceScore;
+    private Integer countCollect;
+    private Integer countCart;
 
 
 //临时属性

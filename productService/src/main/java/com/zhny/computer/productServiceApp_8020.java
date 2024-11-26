@@ -11,6 +11,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 public class productServiceApp_8020 {
 
     public static void main(String[] args) {
+
         SpringApplication.run(productServiceApp_8020.class, args);
     }
 

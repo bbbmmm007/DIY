@@ -2,8 +2,10 @@ package com.zhny.computer.controller;
 
 
 import com.zhny.computer.DTO.*;
+import com.zhny.computer.config.RateLimiter;
 import com.zhny.computer.entity.User;
 import com.zhny.computer.service.UserService;
+import com.zhny.computer.service.ex.ServiceTooSpeedException;
 import com.zhny.computer.service.util.JsonResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,6 +24,8 @@ public class UserController extends BaseController {
     private UserService userService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private RateLimiter rateLimiter;
     //注册的映射
     @PostMapping("reg")
     public JsonResult<Void> reg(@RequestBody User user) {
@@ -31,6 +35,10 @@ public class UserController extends BaseController {
     // 登录的映射
     @PostMapping("login")
     public JsonResult<User> login(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) {
+        if (!rateLimiter.isAllowed("user_login", userLoginDTO.getUsername(), 100, "minute")) {
+            throw new ServiceTooSpeedException("请求过快,请稍后再试");
+        }
+
         User data = userService.login(userLoginDTO);
         // 在 session 中绑定用户数据
         session.setAttribute("uid", data.getUid());

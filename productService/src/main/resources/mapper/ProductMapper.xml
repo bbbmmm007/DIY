@@ -85,7 +85,7 @@
     <insert id="insertProduct" useGeneratedKeys="true" keyProperty="id">
         insert into t_product(child_id,parent_id,ancestor_id,item_type,price,image,performance_score,salt,created_user,status,count_collect,count_cart,
                               created_time,modified_user,modified_time)
-        values (#{childId},#{parentId},#{ancestorId},#{itemType},#{price},#{image},#{performanceScore},#{salt},#{createdUser},#{status},#{count_collect},#{count_cart},#{createdTime},#{modifiedUser},#{modifiedTime})
+        values (#{childId},#{parentId},#{ancestorId},#{itemType},#{price},#{image},#{performanceScore},#{salt},#{createdUser},#{status},#{countCollect},#{countCart},#{createdTime},#{modifiedUser},#{modifiedTime})
     </insert>
 
     <!--删除商品-->
@@ -101,14 +101,29 @@
             <if test="price != null">price = #{price},</if>
             <if test="image != null">image = #{image},</if>
             <if test="salt != null">salt = #{salt},</if>
-            <if test="performanceScore != null">performanceScore = #{performanceScore},</if>
+            <if test="performanceScore != null">performance_score = #{performanceScore},</if>
             modified_user = #{modifiedUser},
             modified_time = #{modifiedTime}
         </set>
         WHERE id = #{id}
     </update>
 
-
+    <!---更新商品的收藏次数-->
+    <update id="updateProductCollectCount">
+        UPDATE t_product
+        <set>
+            count_collect=count_collect+1
+        </set>
+        WHERE id=#{id}
+    </update>
+    <!---更新商品的加入配置车次数-->
+    <update id="updateProductCartCount">
+        UPDATE t_product
+        <set>
+            count_cart=count_cart+1
+        </set>
+        WHERE id=#{id}
+    </update>
 
 
     <!-- 定制化配置 -->

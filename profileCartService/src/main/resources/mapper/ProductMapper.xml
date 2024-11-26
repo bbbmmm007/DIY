@@ -12,154 +12,116 @@
         <result column="performance_score" property="performanceScore"/>
         <result column="memory_support" property="memorySupport"/>
         <result column="min_price"    property="minPrice"/>
+        <result column="count_collect" property="countCollect"/>
+        <result column="count_cart" property="countCart"/>
         <result column="created_user" property="createdUser"/>
         <result column="created_time" property="createdTime"/>
         <result column="modified_user" property="modifiedUser"/>
         <result column="modified_time" property="modifiedTime"/>
     </resultMap>
 
-
-    <!--根据id查询商品信息-->
+    <!--根据商品ID查询商品信息-->
     <select id="findById" resultMap="ProductEntityMap">
-        select * from t_product where id=#{id}
+        SELECT * FROM t_product WHERE id = #{id}
     </select>
 
-    <!--由商品id获取到所有分类id-->
+    <select id="showProduct" resultMap="ProductEntityMap">
+        SELECT item_type, price, image ,salt ,performance_score FROM t_product WHERE id = #{id}
+    </select>
+
+    <!--由商品ID获取到所有分类ID-->
     <select id="showAllProductId" resultMap="ProductEntityMap">
         SELECT child_id, parent_id, ancestor_id
         FROM t_product
-        WHERE id=#{id}}
+        WHERE id = #{id}
     </select>
-    <!--展示所有商品分页-->
-    <select id="showProductFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id,performance_score,salt, item_type, price, image
+
+    <!--查询商品信息，根据条件和分页-->
+    <select id="findProducts" resultMap="ProductEntityMap">
+        SELECT id, child_id, parent_id, ancestor_id, performance_score, salt, item_type, price, image
         FROM t_product
-        WHERE status = #{status}
-            LIMIT #{pageSize} OFFSET #{offset}
+        WHERE status = 1
+        <if test="params.itemType != null">
+            AND item_type LIKE CONCAT('%', #{params.itemType}, '%')
+        </if>
+        <if test="params.ancestorId != null">
+            AND ancestor_id = #{params.ancestorId}
+        </if>
+        <if test="params.parentId != null">
+            AND parent_id = #{params.parentId}
+        </if>
+        <if test="params.childId != null">
+            AND child_id = #{params.childId}
+        </if>
+        <if test="params.sortOrder != null">
+            ORDER BY price ${params.sortOrder}
+        </if>
+        LIMIT #{pageSize} OFFSET #{offset}
     </select>
 
-    <!-- 搜索商品分页 -->
-    <select id="searchProductFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id,performance_score,salt, item_type, price, image
-        FROM t_product
-        WHERE item_type LIKE CONCAT('%', #{itemType}, '%')
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
+    <!---更新商品的收藏次数-->
+    <update id="updateProductCollectCount">
+        UPDATE t_product
+        <set>
+            count_collect=count_collect+1
+        </set>
+        WHERE id=#{id}
+    </update>
+    <!---更新商品的加入配置车次数-->
+    <update id="updateProductCartCount">
+        UPDATE t_product
+        <set>
+            count_cart=count_cart+1
+        </set>
+        WHERE id=#{id}
+    </update>
 
-    <!--根据祖类id分页查询商品-->
-    <select id="findByAnIdFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id, performance_score,salt,item_type, price, image
-        FROM t_product
-        WHERE ancestor_id = #{ancestorId}
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
-
-    <!--根据父类id分页查询商品-->
-    <select id="findByPaIdFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id, performance_score,salt,item_type, price, image
-        FROM t_product
-        WHERE parent_id = #{parentId}
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
-
-    <!--根据子类id分页查询商品-->
-    <select id="findByChIdFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id,performance_score,salt, item_type, price, image
-        FROM t_product
-        WHERE child_id = #{childId}
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
-
-    <!--根据搜索关键字和祖类id分页查询商品-->
-    <select id="schByAnIdFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id,performance_score,salt, item_type, price, image
-        FROM t_product
-        WHERE ancestor_id = #{ancestorId}
-          and item_type LIKE CONCAT('%', #{itemType}, '%')
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
-
-    <!--根据搜索关键字和父类id分页查询商品-->
-    <select id="schByPaIdFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id,performance_score,salt, item_type, price, image
-        FROM t_product
-        WHERE parent_id = #{parentId}
-          and item_type LIKE CONCAT('%', #{itemType}, '%')
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
-
-    <!--根据搜索关键字和子类id分页查询商品-->
-    <select id="schByChIdFen" resultMap="ProductEntityMap">
-        SELECT id, child_id, parent_id, ancestor_id,performance_score,salt, item_type, price, image
-        FROM t_product
-        WHERE child_id = #{childId}
-            and item_type LIKE CONCAT('%', #{itemType}, '%')
-            LIMIT #{pageSize} OFFSET #{offset}
-    </select>
-
-
-
-
-
-    <!-- 统计展示所有商品的总数 -->
-    <select id="countShowProduct" resultType="Integer">
+    <!-- 统计展示所有商品的总数，根据条件 -->
+    <select id="countProducts" resultType="Integer">
         SELECT COUNT(*)
         FROM t_product
-        WHERE status = #{status}
-    </select>
-
-    <!-- 统计搜索商品的总数 -->
-    <select id="countSearchProduct" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE item_type LIKE CONCAT('%', #{itemType}, '%')
-    </select>
-
-    <!-- 统计根据祖类id查询商品的总数 -->
-    <select id="countFindByAnId" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE ancestor_id = #{ancestorId}
-    </select>
-
-    <!-- 统计根据父类id查询商品的总数 -->
-    <select id="countFindByPaId" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE parent_id = #{parentId}
-    </select>
-
-    <!-- 统计根据子类id查询商品的总数 -->
-    <select id="countFindByChId" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE child_id = #{childId}
+        WHERE status = 1
+        <if test="params.itemType != null">
+            AND item_type LIKE CONCAT('%', #{params.itemType}, '%')
+        </if>
+        <if test="params.ancestorId != null">
+            AND ancestor_id = #{params.ancestorId}
+        </if>
+        <if test="params.parentId != null">
+            AND parent_id = #{params.parentId}
+        </if>
+        <if test="params.childId != null">
+            AND child_id = #{params.childId}
+        </if>
     </select>
 
 
-    <!-- 统计根据搜索关键字和祖类id查询商品的总数 -->
-    <select id="countSchByAnId" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE item_type LIKE CONCAT('%', #{itemType}, '%') and
-              ancestor_id = #{ancestorId}
-    </select>
+    <!--添加商品-->
+    <insert id="insertProduct" useGeneratedKeys="true" keyProperty="id">
+        insert into t_product(child_id,parent_id,ancestor_id,item_type,price,image,performance_score,salt,created_user,status,count_collect,count_cart,
+                              created_time,modified_user,modified_time)
+        values (#{childId},#{parentId},#{ancestorId},#{itemType},#{price},#{image},#{performanceScore},#{salt},#{createdUser},#{status},#{countCollect},#{countCart},#{createdTime},#{modifiedUser},#{modifiedTime})
+    </insert>
 
-    <!-- 统计根据搜索关键字和父类id查询商品的总数 -->
-    <select id="countSchByPaId" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE item_type LIKE CONCAT('%', #{itemType}, '%') and
-              parent_id = #{parentId}
-    </select>
+    <!--删除商品-->
+    <delete id="deleteProduct">
+        delete from t_product where id=#{id}
+    </delete>
 
-    <!-- 统计根据搜索关键字和子类id查询商品的总数 -->
-    <select id="countSchByChId" resultType="Integer">
-        SELECT COUNT(*)
-        FROM t_product
-        WHERE item_type LIKE CONCAT('%', #{itemType}, '%') and
-            child_id = #{childId}
-    </select>
+    <!--更新商品信息-->
+    <update id="updateProduct">
+        UPDATE t_product
+        <set>
+            <if test="itemType != null">item_type = #{itemType},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="image != null">image = #{image},</if>
+            <if test="salt != null">salt = #{salt},</if>
+            <if test="performanceScore != null">performanceScore = #{performanceScore},</if>
+            modified_user = #{modifiedUser},
+            modified_time = #{modifiedTime}
+        </set>
+        WHERE id = #{id}
+    </update>
 
 
 
